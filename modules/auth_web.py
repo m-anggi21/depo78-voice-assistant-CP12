@@ -1,17 +1,12 @@
 import streamlit as st
 import hashlib
-from modules.db import get_db
+import psycopg2
+import psycopg2.extras
+from modules.db import get_db     # <— kita gunakan koneksi Supabase
 
-DB = {
-    "host": "localhost",
-    "user": "root",
-    "password": "",
-    "database": "depo78"
-}
-
-def db():
-    return mysql.connector.connect(**DB)
-
+# =====================================================
+# UTILITY: HASH PASSWORD
+# =====================================================
 def hash_password(p):
     return hashlib.sha256(p.encode()).hexdigest()
 
@@ -26,34 +21,38 @@ def login_page():
     pw = st.text_input("Password", type="password")
 
     if st.button("Login"):
+        try:
+            conn = get_db()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-        conn = get_db()
-        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        
-        cur.execute("""
-            SELECT * FROM users
-            WHERE username = %s AND password_hash = %s
-        """, (username, hash_password(pw)))
-        
-        user = cur.fetchone()
+            cur.execute("""
+                SELECT * FROM users
+                WHERE username = %s AND password_hash = %s
+            """, (username, hash_password(pw)))
 
-        conn.close()
+            user = cur.fetchone()
+            conn.close()
+
+        except Exception as e:
+            st.error(f"Gagal menghubungkan database: {e}")
+            return
 
         if not user:
             st.error("Username atau password salah.")
             return
 
-        # SIMPAN SESSION STATE DENGAN CARA YANG BENAR
-        st.session_state["user"] = user
-        st.session_state["role"] = user["role"].lower()   # FIX UTAMA
+        # Simpan session
+        st.session_state["user"] = dict(user)
+        st.session_state["role"] = user["role"].lower()
         st.session_state["logged_in"] = True
 
         if st.session_state["role"] == "admin":
-            st.success("Login berhasil. Anda login sebagai Admin.")
+            st.success("Login berhasil sebagai Admin.")
             st.switch_page("pages/3_Admin_Dashboard.py")
         else:
-            st.success("Login berhasil. Anda login sebagai User.")
+            st.success("Login berhasil sebagai User.")
             st.switch_page("pages/2_User_Order.py")
+
 
 # =====================================================
 # REGISTER PAGE (USER ONLY)
@@ -77,23 +76,31 @@ def register_page():
             st.error("Password tidak sama.")
             return
 
-        conn = db()
-        c = conn.cursor()
+        try:
+            conn = get_db()
+            cur = conn.cursor()
 
-        c.execute("SELECT id FROM users WHERE username=%s", (username,))
-        if c.fetchone():
-            st.error("Username sudah digunakan.")
-            return
+            # Cek username sudah dipakai atau belum
+            cur.execute("SELECT id FROM users WHERE username = %s", (username,))
+            if cur.fetchone():
+                st.error("Username sudah digunakan.")
+                conn.close()
+                return
 
-        cur.execute("""
-            INSERT INTO users(nama, username, cluster, blok, no_rumah,
-                gender, notelp, password_hash, role)
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,'user')
-        """, (nama, username, cluster, blok, no_rumah,
-              gender, telepon, hash_password(pw)))
+            # Insert user baru
+            cur.execute("""
+                INSERT INTO users(nama, username, cluster, blok, no_rumah,
+                    gender, notelp, password_hash, role)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,'user')
+            """, (
+                nama, username, cluster, blok, no_rumah,
+                gender, telepon, hash_password(pw)
+            ))
 
-        conn.commit()
-        conn.close()
+            conn.commit()
+            conn.close()
 
-        st.success("Akun berhasil dibuat! Silakan login.")
+            st.success("Akun berhasil dibuat! Silakan login.")
 
+        except Exception as e:
+            st.error(f"Gagal mendaftar: {e}")
