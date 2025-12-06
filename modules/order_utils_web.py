@@ -1,51 +1,81 @@
-import mysql.connector
 import time
+import psycopg2
+import psycopg2.extras
+from modules.db import get_db   # gunakan koneksi Supabase
 
-DB = {
-    "host": "localhost",
-    "user": "root",
-    "password": "",
-    "database": "depo78"
-}
 
-def db():
-    return mysql.connector.connect(**DB)
-
+# ============================================================
+# GENERATE NOMOR ANTRIAN
+# Format: Dep78-YYMMDD-XXX
+# ============================================================
 def generate_queue():
     today = time.strftime("%y%m%d")
-    conn = db()
-    c = conn.cursor()
-    c.execute("INSERT INTO queue_numbers(tanggal) VALUES (%s)", (today,))
-    conn.commit()
-    c.execute("SELECT LAST_INSERT_ID()")
-    urut = c.fetchone()[0]
-    conn.close()
-    return f"Dep78-{today}-{urut:03d}"
 
+    conn = get_db()
+    cur = conn.cursor()
+
+    # Insert row dummy → supaya dapat auto-increment id
+    cur.execute("""
+        INSERT INTO queue_numbers (tanggal)
+        VALUES (%s)
+        RETURNING id
+    """, (today,))
+
+    queue_id = cur.fetchone()[0]
+    conn.commit()
+    conn.close()
+
+    return f"Dep78-{today}-{queue_id:03d}"
+
+
+# ============================================================
+# SAVE ORDER → untuk USER WEB STREAMLIT
+# cart_items format dari order_session.py:
+# {
+#   "product_key": ...
+#   "nama_item": ...
+#   "harga": ...
+#   "qty": ...
+# }
+# ============================================================
 def save_order_web(user, cart_items, total):
-    conn = db()
-    c = conn.cursor()
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     nomor = generate_queue()
-    c.execute("""
-        INSERT INTO orders (user_id, nama_lengkap, cluster, blok, no_rumah, 
-            nomor_antrian, total_harga, status)
+
+    # INSERT ke tabel orders
+    cur.execute("""
+        INSERT INTO orders (
+            user_id, nama_lengkap, cluster, blok, no_rumah,
+            nomor_antrian, total_harga, status
+        )
         VALUES (%s,%s,%s,%s,%s,%s,%s,'menunggu')
-    """, (user["id"], user["nama"], user["cluster"], user["blok"],
-          user["no_rumah"], nomor, total))
+        RETURNING id
+    """, (
+        user["id"], user["nama"], user["cluster"], user["blok"],
+        user["no_rumah"], nomor, total
+    ))
+
+    order_id = cur.fetchone()["id"]
     conn.commit()
 
-    c.execute("SELECT LAST_INSERT_ID()")
-    order_id = c.fetchone()[0]
-
+    # INSERT ORDER ITEMS
     for item in cart_items:
-        key, qty, nama_item, harga_satuan = item
-        total_item = qty * harga_satuan
-        c.execute("""
-            INSERT INTO order_items(order_id,nama_item,qty,harga_satuan,total_harga)
+        cur.execute("""
+            INSERT INTO order_items (
+                order_id, nama_item, qty, harga_satuan, total_harga
+            )
             VALUES (%s,%s,%s,%s,%s)
-        """, (order_id, nama_item, qty, harga_satuan, total_item))
+        """, (
+            order_id,
+            item["nama_item"],
+            item["qty"],
+            item["harga"],
+            item["qty"] * item["harga"],
+        ))
 
     conn.commit()
     conn.close()
+
     return nomor, order_id
