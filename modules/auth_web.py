@@ -2,17 +2,18 @@ import streamlit as st
 import hashlib
 import psycopg2
 import psycopg2.extras
-from modules.db import get_db     # <— kita gunakan koneksi Supabase
+from modules.db import get_db
+
 
 # =====================================================
-# UTILITY: HASH PASSWORD
+# HASH PASSWORD
 # =====================================================
 def hash_password(p):
     return hashlib.sha256(p.encode()).hexdigest()
 
 
 # =====================================================
-# LOGIN PAGE
+# LOGIN
 # =====================================================
 def login_page():
     st.title("🔐 Login Sistem Depo 78")
@@ -30,32 +31,29 @@ def login_page():
                 WHERE username = %s AND password_hash = %s
             """, (username, hash_password(pw)))
 
-            user = cur.fetchone()
+            customer = cur.fetchone()
             conn.close()
 
         except Exception as e:
             st.error(f"Gagal menghubungkan database: {e}")
             return
 
-        if not user:
+        if not customer:
             st.error("Username atau password salah.")
             return
 
-        # Simpan session
-        st.session_state["user"] = dict(user)
-        st.session_state["role"] = user["role"].lower()
+        st.session_state["customer"] = dict(customer)
+        st.session_state["role"] = customer["role"].lower()
         st.session_state["logged_in"] = True
 
-        if st.session_state["role"] == "admin":
-            st.success("Login berhasil sebagai Admin.")
+        if customer["role"] == "admin":
             st.switch_page("pages/3_Admin_Dashboard.py")
         else:
-            st.success("Login berhasil sebagai User.")
             st.switch_page("pages/2_User_Order.py")
 
 
 # =====================================================
-# REGISTER PAGE (USER ONLY)
+# REGISTER
 # =====================================================
 def register_page():
     st.title("📝 Registrasi Akun Pengguna")
@@ -66,7 +64,7 @@ def register_page():
     blok = st.text_input("Blok")
     no_rumah = st.text_input("No Rumah")
     gender = st.selectbox("Gender", ["L", "P"])
-    telepon = st.text_input("Nomor Telepon")
+    notelp = st.text_input("Nomor Telepon")
     pw = st.text_input("Password", type="password")
     cpw = st.text_input("Konfirmasi Password", type="password")
 
@@ -80,21 +78,24 @@ def register_page():
             conn = get_db()
             cur = conn.cursor()
 
-            # Cek username sudah dipakai atau belum
-            cur.execute("SELECT id FROM users WHERE username = %s", (username,))
-            if cur.fetchone():
-                st.error("Username sudah digunakan.")
+            # cek username
+            cur.execute("SELECT id FROM users WHERE username=%s", (username,))
+            exists = cur.fetchone()
+
+            if exists:
+                st.error("Username sudah digunakan!")
                 conn.close()
                 return
 
-            # Insert user baru
+            # insert user baru
             cur.execute("""
-                INSERT INTO users(nama, username, cluster, blok, no_rumah,
-                    gender, notelp, password_hash, role)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,'user')
+                INSERT INTO users
+                    (nama, username, cluster, blok, no_rumah, gender, notelp, password_hash, role)
+                VALUES
+                    (%s,%s,%s,%s,%s,%s,%s,%s,'customer')
             """, (
                 nama, username, cluster, blok, no_rumah,
-                gender, telepon, hash_password(pw)
+                gender, notelp, hash_password(pw)
             ))
 
             conn.commit()
