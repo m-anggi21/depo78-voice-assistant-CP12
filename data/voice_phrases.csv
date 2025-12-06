@@ -1,0 +1,104 @@
+﻿key,text,lang,note
+welcome,Selamat datang di Toko Depo 78. Silakan melakukan pemesanan.,id,Sambutan awal
+welcome,Welcome to Depo 78. You may order using voice or type.,en,Welcome message
+
+listen_prompt,Silakan bicara. Saya sedang mendengarkan.,id,Prompt mendengar
+listen_prompt,You may speak now, I am listening.,en,Prompt listen
+
+after_summary_prompt,Jika ada perintah tambahan, silakan ucapkan. Jika ingin membayar, ucapkan bayar. Jika selesai semua, ucapkan cukup.,id
+
+no_hear,Maaf, saya tidak menangkap suara Anda Mohon ulangi.,id,Tidak terdengar
+no_hear,Sorry, I didn't catch that. Please repeat.,en,Not heard
+
+choice,Silakan pilih nomor opsi yang Anda inginkan, atau sebutkan merk/nama produk.,id,pilihan
+choice,Please choose an option number or say the brand/product name.,en,Choice prompt
+
+not_understood,Saya belum memahami maksud Anda. Mohon jelaskan kembali.,id,Tidak mengerti
+not_understood,I didn’t understand. Please repeat your request.,en,Not understood
+
+repeat,Mohon diulang lagi ya.,id,Permintaan mengulang
+repeat,Please say that again.,en,Repeat request
+
+yes,Ya, baik.,id,Jawaban afirmatif
+yes,Yes, sure.,en,Positive confirmation
+
+no,Tidak.,id,Jawaban negatif
+no,No.,en,Negative confirmation
+
+continue,Lanjut, silakan.,id,Melanjutkan proses
+continue,Go ahead.,en,Continue process
+
+cancel,Baik, saya batalkan.,id,Membatalkan tindakan
+cancel,Okay, cancelled.,en,Cancel action
+
+exit,Program akan ditutup, terima kasih.,id,Menutup aplikasi
+exit,The program will now close. Thank you.,en,Exit program
+
+help,Anda dapat mengatakan seperti: 'beli aqua galon' atau 'lihat keranjang'.,id,Bantuan umum
+help,You can say things like: 'buy aqua gallon' or 'show cart'.,en,General help
+
+item_added,Item {name} sejumlah {qty} berhasil ditambahkan ke keranjang.,id,Sukses tambah item
+item_added,Added {qty} of {name} to your cart.,en,Item added
+
+cart_empty,Keranjang masih kosong. Silakan lakukan pemesanan.,id,Keranjang kosong
+cart_empty,Your cart is currently empty.,en,Cart empty
+
+show_cart,Berikut adalah isi keranjang Anda:,id,Menampilkan keranjang
+show_cart,Here is your current cart:,en,Show cart
+
+clear_cart,Keranjang telah dikosongkan.,id,Menghapus semua isi keranjang
+clear_cart,Your cart has been cleared.,en,Clear cart
+
+total_summary,Total pesanan Anda saat ini adalah Rp{total:,}.,id,Total belanja
+total_summary,Your total amount is Rp{total:,}.,en,Total amount
+
+option_prompt,Terdapat beberapa pilihan produk. Silakan pilih nomor atau sebutkan nama.,id,Opsi produk
+option_prompt,There are multiple options. Please choose a number or say the brand.,en,Option prompt
+
+ask_qty,Berapa jumlah yang Anda inginkan untuk produk {name}?,id,Tanya jumlah
+ask_qty,How many units of {name} do you want?,en,Ask quantity
+
+ask_category,Produk apa yang Anda maksud? Contoh: Aqua galon.,id,Tanya kategori
+ask_category,What product do you mean? Example: Aqua gallon.,en,Ask category
+
+invalid_choice,Pilihan tidak valid. Silakan coba lagi.,id,Salah input opsi
+invalid_choice,Invalid choice. Please try again.,en,Invalid choice
+
+confirm_selection,Anda memilih {name} sebanyak {qty},id,Konfirmasi pilihan
+confirm_selection,You selected {qty} of {name}.,en,Confirm selection
+
+auto_selected,Saya memilih produk yang paling sesuai yaitu {name}.,id,Pemilihan otomatis
+auto_selected,Automatically selected {name}.,en,Auto selection
+
+out_of_stock,Maaf {name} sedang kosong.,id,Stok habis
+out_of_stock,Sorry, {name} is currently out of stock.,en,Out of stock
+
+ask_confirm_order,Apakah Anda ingin melanjutkan ke pembayaran?,id,Konfirmasi checkout
+ask_confirm_order,Do you want to proceed to payment?,en,Payment confirmation
+
+order_processing,Pesanan sedang diproses.,id,Proses pesanan
+order_processing,Your order is being processed.,en,Order processing
+
+order_cancelled,Pesanan telah dibatalkan.,id,Batal order
+order_cancelled,Order cancelled.,en,Cancel order
+
+order_next,Jika Anda sudah selesai melakukan pesanan, ucapkan cukup. Jika masih ada pesanan lain, silakan lanjutkan.,id,lanjut order
+order_next,If you are done ordering, say “done”. If you want to add more items, please continue.,en,Next instruction
+
+order_summary,Berikut pesanan Anda.,id,konfirmasi pesanan
+order_summary,Here is your order summary.,en,Order summary
+
+confirm_more,Katakan Tidak Jika Tidak Ada Tambahan.,id,konfirmasi ulang
+confirm_more,Say No if there are no additional items.,en,Confirm more
+
+item_added_final,Item telah dimasukkan ke keranjang.,id,keranjang akhir
+item_added_final,The item has been added to the cart.,en,Final cart confirmation
+
+continue_order,Silakan lanjutkan pesanan Anda.,id,lanjut pesanan
+continue_order,Please continue with your order.,en,Continue order
+
+payment_method,Sebutkan metode pembayaran: tunai atau transfer.,id,Tanya pembayaran
+payment_method,Select payment method: cash or transfer.,en,Payment method
+
+payment_received,Pembayaran diterima, terima kasih!,id,Pembayaran sukses
+payment_received,Payment received, thank you!,en,Payment received
