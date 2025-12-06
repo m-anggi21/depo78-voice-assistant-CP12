@@ -13,8 +13,8 @@ st.set_page_config(
 # ==========================================
 # INIT SESSION
 # ==========================================
-if "user" not in st.session_state:
-    st.session_state["user"] = None
+if "customer" not in st.session_state:
+    st.session_state["customer"] = None
 
 if "role" not in st.session_state:
     st.session_state["role"] = None
@@ -34,7 +34,7 @@ if st.session_state["logged_in"]:
         st.switch_page("pages/3_Admin_Dashboard.py")
 
     # USER → langsung ke halaman User Order
-    elif st.session_state["role"] == "user":
+    elif st.session_state["role"] == "customer":
         st.switch_page("pages/2_User_Order.py")
 
     else:
