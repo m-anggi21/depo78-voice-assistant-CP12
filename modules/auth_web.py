@@ -32,25 +32,32 @@ def login_page():
             """, (username, hash_password(pw)))
 
             customer = cur.fetchone()
-            conn.close()
 
         except Exception as e:
             st.error(f"Gagal menghubungkan database: {e}")
             return
 
-        if not customer:
+        if customer is None:
             st.error("Username atau password salah.")
             return
 
-        st.session_state["user"] = dict(user)
-        st.session_state["role"] = customer["role"].lower()
+        # Convert psycopg2 DictRow → dict() secara aman
+        customer_dict = dict(customer)
+
+        # Simpan session
+        st.session_state["user"] = customer_dict
+        st.session_state["role"] = customer_dict["role"].lower()
         st.session_state["logged_in"] = True
 
-        if customer["role"] == "admin":
+        conn.close()
+
+        # Routing role
+        if st.session_state["role"] == "admin":
+            st.success("Login berhasil sebagai Admin.")
             st.switch_page("pages/3_Admin_Dashboard.py")
         else:
+            st.success("Login berhasil sebagai Customer.")
             st.switch_page("pages/2_User_Order.py")
-
 
 # =====================================================
 # REGISTER
@@ -105,4 +112,5 @@ def register_page():
 
         except Exception as e:
             st.error(f"Gagal mendaftar: {e}")
+
 
