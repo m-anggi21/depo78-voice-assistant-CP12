@@ -1,45 +1,76 @@
-import streamlit as st
-import mysql.connector
-
-DB = {
-    "host": "localhost",
-    "user": "root",
-    "password": "",
-    "database": "depo78"
-}
-
-def db():
-    return mysql.connector.connect(**DB)
+import psycopg2
+import psycopg2.extras
+from modules.db import get_db
 
 
-def get_orders():
-    c = db().cursor(dictionary=True)
-    c.execute("SELECT * FROM orders ORDER BY created_at DESC")
-    rows = c.fetchall()
+# ========================================================
+# GET ALL ORDERS
+# ========================================================
+def get_all_orders():
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    cur.execute("""
+        SELECT id, user_id, nama_lengkap, cluster, blok, no_rumah,
+               nomor_antrian, total_harga, status, created_at
+        FROM orders
+        ORDER BY created_at DESC
+    """)
+
+    rows = cur.fetchall()
+    conn.close()
     return rows
 
 
-def admin_page():
-    st.title("📦 Admin Dashboard Depo 78")
+# ========================================================
+# GET ORDER ITEMS
+# ========================================================
+def get_order_items(order_id):
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    orders = get_orders()
+    cur.execute("""
+        SELECT nama_item, qty, harga_satuan, total_harga
+        FROM order_items
+        WHERE order_id = %s
+    """, (order_id,))
 
-    for o in orders:
-        with st.expander(f"Order {o['nomor_antrian']} — {o['nama_lengkap']}"):
-            st.write(o)
+    rows = cur.fetchall()
+    conn.close()
+    return rows
 
-            new_status = st.selectbox(
-                "Ubah status:",
-                ["menunggu", "diproses", "dikirim", "selesai"],
-                index=["menunggu", "diproses", "dikirim", "selesai"].index(o["status"]),
-                key=f"stat-{o['id']}"
-            )
 
-            if st.button(f"Simpan status {o['id']}", key=f"smp-{o['id']}"):
-                conn = db()
-                c = conn.cursor()
-                c.execute("UPDATE orders SET status=%s WHERE id=%s",
-                          (new_status, o["id"]))
-                conn.commit()
-                conn.close()
-                st.success("Status diperbarui. Refresh halaman.")
+# ========================================================
+# UPDATE STATUS ORDER
+# ========================================================
+def update_order_status(order_id, new_status):
+    conn = get_db()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE orders
+        SET status = %s
+        WHERE id = %s
+    """, (new_status, order_id))
+
+    conn.commit()
+    conn.close()
+    return True
+
+
+# ========================================================
+# DELETE ORDER
+# ========================================================
+def delete_order(order_id):
+    conn = get_db()
+    cur = conn.cursor()
+
+    # DELETE ITEMS FIRST
+    cur.execute("DELETE FROM order_items WHERE order_id = %s", (order_id,))
+
+    # DELETE PARENT ORDER
+    cur.execute("DELETE FROM orders WHERE id = %s", (order_id,))
+
+    conn.commit()
+    conn.close()
+    return True
