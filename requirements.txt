@@ -1,1 +1,8 @@
 streamlit
+streamlit-webrtc
+numpy
+av
+scipy
+pandas
+openai
+mysql-connector-python
