@@ -1,6 +1,6 @@
 import streamlit as st
-import mysql.connector
 import hashlib
+from modules.db import get_db
 
 DB = {
     "host": "localhost",
@@ -27,14 +27,16 @@ def login_page():
 
     if st.button("Login"):
 
-        conn = db()
-        c = conn.cursor(dictionary=True)
-        c.execute("""
-            SELECT * FROM users 
-            WHERE username=%s AND password_hash=%s
+        conn = get_db()
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        
+        cur.execute("""
+            SELECT * FROM users
+            WHERE username = %s AND password_hash = %s
         """, (username, hash_password(pw)))
+        
+        user = cur.fetchone()
 
-        user = c.fetchone()
         conn.close()
 
         if not user:
@@ -83,7 +85,7 @@ def register_page():
             st.error("Username sudah digunakan.")
             return
 
-        c.execute("""
+        cur.execute("""
             INSERT INTO users(nama, username, cluster, blok, no_rumah,
                 gender, notelp, password_hash, role)
             VALUES (%s,%s,%s,%s,%s,%s,%s,%s,'user')
@@ -94,3 +96,4 @@ def register_page():
         conn.close()
 
         st.success("Akun berhasil dibuat! Silakan login.")
+
