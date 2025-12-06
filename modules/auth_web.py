@@ -42,7 +42,7 @@ def login_page():
             st.error("Username atau password salah.")
             return
 
-        st.session_state["customer"] = dict(customer)
+        st.session_state["user"] = dict(user)
         st.session_state["role"] = customer["role"].lower()
         st.session_state["logged_in"] = True
 
@@ -105,3 +105,4 @@ def register_page():
 
         except Exception as e:
             st.error(f"Gagal mendaftar: {e}")
+
